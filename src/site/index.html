@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Image conversion</title>
+        <link rel="stylesheet" href="./style.css">
+        <script src="script.js"></script>
+    </head>
+    <body>
+        <div class="wrapper">
+            <div class="conversion-container">
+                <label for="image-input">Image to Binary</label>
+                <input type="file" name="image-input" id="image-input" accept="image/png,image/jpeg">
+                <div class="action-btn">
+                    <button disabled action="to-binary-download">Download Binary</button>
+                </div>
+                <canvas id="to-binary-canvas"></canvas>
+            </div> 
+            <div class="conversion-container">
+                <label for="binary-input">Binary to Image</label>
+                <input type="file" name="binary-input" id="binary-input" accept=".bin">
+                <div class="size-inputs">
+                    <input type="number" name="width-input" id="to-image-width-input" placeholder="width">
+                    <input type="number" name="height-input" id="to-image-height-input" placeholder="height">
+                </div>
+                <div class="action-btns">
+                    <button disabled action="to-image-convert">Convert to Image</button>
+                    <button disabled action="to-image-download">Download Image</button>
+                </div>
+                <p class="res-msg" id="to-image-msg"></p>
+                <canvas id="to-image-canvas"></canvas>
+            </div> 
+        </div>
+      </body>
+</html>
