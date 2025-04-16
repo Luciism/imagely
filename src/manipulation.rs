@@ -2,6 +2,33 @@ use core::panic;
 
 use super::Image;
 
+
+fn composite_rgba(top: Vec<u8>, bottom: Vec<u8>) -> Vec<u8> {
+    assert_eq!(top.len(), 4);
+    assert_eq!(bottom.len(), 4);
+
+    // Calculate new alpha
+    // Reduce to range 0-1
+    let a_top = top[3] as f32 / 255.0;
+    let a_bottom = bottom[3] as f32 / 255.0;
+
+    let a_out = a_top + a_bottom * (1.0 - a_top);
+
+    // Calculate new RGB values;
+    let mut result = Vec::with_capacity(4);
+
+    for c in 0..3 {
+        let c_top = top[c] as f32;
+        let c_bottom = bottom[c] as f32;
+
+        let c_out = (c_top * a_top + c_bottom * a_bottom * (1.0 - a_top)) / a_out;
+        result.push(c_out as u8);
+    }
+    result.push((a_out as u8 * 255).into());
+
+    result
+}
+
 impl Image {
     pub fn to_rgb(&mut self) {
         // Remove each alpha value
@@ -44,7 +71,6 @@ impl Image {
     pub fn paste(&mut self, mut image2: Image, position: (u32, u32)) {
         let starting_pos = position.1 * self.width + position.0;
 
-        // TODO: RGB / RGBA conversion
         self.make_compatible(&mut image2);
 
         for i in 0..image2.height {
@@ -55,39 +81,43 @@ impl Image {
                 break;
             }
 
+
             let splice_start = row_pos;
             let mut splice_end = row_pos + image2.width;
 
             // Prevent horizontal wraparound
             let max_x_pos = (i + position.1 + 1) * self.width;
-            let mut cut_x = 0;
 
             if splice_end > max_x_pos {
-                cut_x = splice_end - max_x_pos;
                 splice_end = max_x_pos;
             }
 
             // Prevent vertical overflow
-            let mut cut_y = 0;
             let data_len = self.data.len();
             if splice_end > data_len as u32 {
-                cut_y = splice_end - data_len as u32;
                 splice_end = data_len as u32;
             }
 
-            let splice2_start = i * image2.width;
-            let splice2_end = (i * image2.width + image2.width) - cut_x - cut_y;
+            for p in 0..(splice_end - splice_start) {
+                let image1_pixel_pos = (row_pos + p) as usize * self.channels as usize;
+                let image2_pixel_pos = (i * image2.width + p) as usize * self.channels as usize;
 
-            self.data.splice(
-                splice_start as usize * self.channels as usize
-                    ..
-                splice_end as usize * self.channels as usize,
-                image2.data[
-                    splice2_start as usize * self.channels as usize
-                    ..
-                    splice2_end as usize * self.channels as usize
-                ].to_vec(),
-            );
+                let mut new_value = image2.data[image2_pixel_pos..(image2_pixel_pos + self.channels as usize)].to_vec();
+
+                if self.channels == 4 && image2.data[image2_pixel_pos + 3] < 255 {
+                    // Calculate correct RGBA composite.
+                    let old_value = self.data[image1_pixel_pos..(image1_pixel_pos + self.channels as usize)].to_vec();
+
+                    new_value = composite_rgba(new_value, old_value);
+                }
+
+                self.data[image1_pixel_pos] = new_value[0];
+                self.data[image1_pixel_pos + 1] = new_value[1];
+                self.data[image1_pixel_pos + 2] = new_value[2];
+                if self.channels == 4 {
+                    self.data[image1_pixel_pos + 3] = new_value[3];
+                }
+            }
         }
     }
 
