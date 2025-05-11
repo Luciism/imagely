@@ -1,7 +1,9 @@
 mod manipulation;
+mod geometry;
+mod filters;
 
 use core::panic;
-use std::fs;
+use std::{fs, ops::Add};
 
 #[derive(Debug)]
 pub struct PixelRGBA {
@@ -71,6 +73,62 @@ impl Image {
 
     pub fn write_binary_image(self, path: &str) -> Result<(), std::io::Error> {
         fs::write(path, self.data)
+    }
+
+    pub fn pos_to_index(&self, x: usize, y: usize) -> usize {
+        (y * self.width as usize + x) * self.channels as usize
+    }
+
+    pub fn index_to_pos(&self, index: usize) -> (usize, usize) {
+        let pixel_index = index / self.channels as usize;
+        self.pixel_index_to_pos(pixel_index)
+    }
+
+    pub fn pixel_index_to_index(&self, pixel_index: usize) -> usize {
+        pixel_index * self.channels as usize
+    }
+
+    pub fn pixel_index_to_pos(&self, pixel_index: usize) -> (usize, usize) {
+        let x = pixel_index % self.width as usize;
+        let y = pixel_index / self.width as usize;
+
+        (x, y)       
+    }
+
+    pub fn is_pos_in_image(&self, pos: (isize, isize)) -> bool {
+        if pos.0 < 0 || pos.1 < 0 {
+            return false;
+        }
+
+        if pos.0 >= self.width as isize || pos.1 >= self.height as isize {
+            return false;
+        }
+
+        true
+    }
+
+    pub fn sum_pos<T: Add>(pos1: (T, T), pos2: (T, T)) -> (T::Output, T::Output) {
+        (pos1.0 + pos2.0, pos1.1 + pos2.1)
+    }
+
+    pub fn subtract_pos(pos1: (usize, usize), pos2: (usize, usize)) -> (isize, isize) {
+        (pos1.0 as isize - pos2.0 as isize, pos1.1 as isize - pos2.1 as isize)
+    }
+
+    pub fn new(width: u32, height: u32) -> Image {
+        let channels: u8 = 4;
+        let data_len = (width * height * channels as u32) as usize;
+
+        let mut data = Vec::with_capacity(data_len);
+        data.resize(data_len, 0);
+
+        Image {
+            channels,
+            width,
+            height,
+            data
+        }
+
     }
 }
 
