@@ -23,6 +23,9 @@ It is not recommended to actually use this, it was more of just a fun project fo
 - Masking
 - Utilize GPU
 
+### Website
+
+The website located in `src/site/` is used to convert images to the correct binary format and to preview the binary images.
 
 ### Example
 
