@@ -4,6 +4,8 @@
 
 A basic proof-of-concept image processing library with a few operations.
 
+*I tried to produce this while doing as little research as possible.*
+
 It is not recommended to actually use this, it was more of just a fun project for myself.
 
 ### Functionality
