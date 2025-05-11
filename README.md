@@ -1,23 +1,32 @@
-use imagely::Image;
-use std::time::SystemTime;
+# Imagely
 
-#[allow(dead_code)]
-fn time_benchmark(benchmark: fn() -> (), iterations: usize, label: &str) -> u128 {
-    let start_time = SystemTime::now();
+### What is Imagely?
 
-    for _ in 0..iterations {
-        benchmark();
-    }
+A basic proof-of-concept image processing library with a few operations.
 
-    let total_time = SystemTime::now().duration_since(start_time).unwrap().as_millis();
-    println!(
-        "[{}] {} iterations completed with avg of {}ms",
-        label, iterations, total_time / iterations as u128);
+It is not recommended to actually use this, it was more of just a fun project for myself.
 
-    total_time
-}
+### Functionality
 
-#[allow(unused_mut)]
+- Load / save binary (RGBA) images
+- Conversion between RGB / RGBA
+- Pasting images
+- Cropping images
+- Rotating images (90°, 180°, 270°)
+- Convert to black & white
+- Apply gaussian blur (extremely slow)
+- Draw circle
+
+#### Planned functionality
+
+- Drawing other geomoetric shapes
+- Masking
+- Utilize GPU
+
+
+### Example
+
+```rust
 fn main() {
     // Load binary image
     let mut image = Image::load_binary_image("./src/imgs/image.bin", 4, 1080, 1920).unwrap();
@@ -44,3 +53,4 @@ fn main() {
     // Save result
     let _ = image.write_binary_image("src/site/media/output.bin");
 }
+```
